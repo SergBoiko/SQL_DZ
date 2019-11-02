@@ -4,26 +4,34 @@ WHERE e1.Salary >
 
 SELECT d.Id,
 d.Name,
-COUNT(*) 
-FROM Department d, Employee e
-WHERE d.Id = e.DepartmentId
+COUNT(e.DepartmentId) 
+FROM Department d
+LEFT JOIN Employee e ON d.Id = e.DepartmentId
 GROUP BY d.Id, d.Name 
-HAVING COUNT(*) < 3;
+HAVING COUNT(e.DepartmentId) < 3;
 
 SELECT * FROM Employee e1
 WHERE e1.Salary = 
-(SELECT MAX (Salary) FROM Employee)
+(SELECT MAX (e2.Salary) FROM Employee e2
+WHERE e1.DepartmentId = e2.DepartmentId
+);
 
 
-SELECT MAX (Salary) FROM (SELECT d.Id,
+SELECT * FROM (SELECT d.Id,
 d.Name,
 SUM(e.Salary) AS Salary
 FROM Department d, Employee e
 WHERE d.Id = e.DepartmentId
-GROUP BY d.Id, d.Name) x 
+GROUP BY d.Id, d.Name) x
+WHERE x.Salary = (SELECT MAX (Salary)  FROM (SELECT d.Id,
+d.Name,
+SUM(e.Salary) AS Salary
+FROM Department d, Employee e
+WHERE d.Id = e.DepartmentId
+GROUP BY d.Id, d.Name) y);
 
 SELECT * FROM Employee e1
-WHERE ChiefId = NULL OR DepartmentId <> (SELECT DepartmentId FROM Employee e2 WHERE e1.ChiefId = e2.Id);
+WHERE ChiefId IS NULL OR DepartmentId <> (SELECT DepartmentId FROM Employee e2 WHERE e1.ChiefId = e2.Id);
 
 SELECT * FROM Employee 
 ORDER BY Salary 
